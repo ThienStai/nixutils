@@ -84,7 +84,7 @@ int main(const int argc, const char* argv[])
 
 }
 void print_help() {
-	std::cout << "Uasge: sysdo [options] procname.exe arg1 arg2 ..." << std::endl;
+	std::cout << "Uasge: sysdo [options] <procname.exe> [arg1] [arg2] ..." << std::endl;
 	std::cout << " -h --help                show this message" << std::endl;
 	exit(0);
 }
