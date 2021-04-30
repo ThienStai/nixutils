@@ -1,4 +1,4 @@
-##nixutils - my recreation on \*nix's utilities.
+## nixutils - my recreation of \*nix's utilities.
 
 Currently contains:
 
