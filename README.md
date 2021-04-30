@@ -6,4 +6,4 @@ Currently contains:
 
 - `touch`
 
-- 
+- `sysdo` - analogous to `sudo` 

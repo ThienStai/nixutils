@@ -42,3 +42,9 @@ x64/pidof.exe
 x64/touch.exe
 x86/pidof.exe
 x86/touch.exe
+*.log
+*.recipe
+*.txt
+*.ipdb
+*.iobj
+*.exe
