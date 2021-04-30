@@ -12,7 +12,6 @@ int main(const int argc, const char* argv[])
 	BOOL nocreate = FALSE;
 	BOOL discard_existing = FALSE;
 	BOOL existed = FALSE;
-	int suc_count = 0, fail_count = 0, ig_count = 0;
 	cxxopts::Options options("touch", "touch");
 	options.add_options()
 		("c,no-create", "no-create", cxxopts::value<bool>()->default_value("false"))
@@ -28,44 +27,31 @@ int main(const int argc, const char* argv[])
 	const char* curfile;
 	if (result.count("help"))
 		print_help();
-	for (int i = 0; i < fl.size(); i++) {
+	for (size_t i = 0; i < fl.size(); i++) {
 		curfile = fl[i].c_str();
 		existed = PathFileExistsA(curfile);
 		if (!existed && !nocreate) {
-			std::cout << curfile << " not exist,creation status = ";
 			FILE* tmp;
 			fopen_s(&tmp, curfile, "w+");
 			if (tmp == nullptr) {
-				std::cout << "FAILURE" << std::endl;
 				continue;
 			}
-			std::cout << "SUCCESS" << std::endl;
 			fclose(tmp);
-			suc_count++;
 			continue;
 		}
 		if (!existed && nocreate) {
-			std::cout << curfile << " existed, dont create new" << std::endl;
-			ig_count++;
 			continue;
 		}
 		if (existed && discard_existing) {
-			std::cout << curfile << " existed, overwrite attempt status = ";
 			FILE* tmp;
 			fopen_s(&tmp, curfile, "w+");
 			if (tmp == nullptr) {
-				std::wcout << "FAILURE" << std::endl;
-				fail_count++;
 				continue;
 			}
 			fclose(tmp);
-			std::cout << "SUCCESS" << std::endl;
-			suc_count++;
 			continue;
 		}
 		if (existed && !discard_existing) {
-			std::cout << curfile << "existed, dont overwrite" << std::endl;
-			ig_count++;
 			continue;
 		}
 

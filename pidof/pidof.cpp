@@ -21,7 +21,7 @@ int main(const int argc, const char* argv[])
 		print_help();
 	}
 	single = result.count("s");
-	for (int j = 1; j < il.size(); j++) {
+	for (size_t j = 0; j < il.size(); j++) {
 		swprintf(target, BUF_SIZE, L"%hs", il[j].c_str());
 		std::vector<DWORD> found;
 		found = GetProcId(target);
@@ -29,15 +29,17 @@ int main(const int argc, const char* argv[])
 			std::cout << found[0];
 			continue;
 		}
-		for (size_t i = 0; i < found.size(); i++)
-			std::cout << found[i] << " ";
+		if (found.size()) {
+			for (size_t i = 0; i < found.size(); i++)
+				std::cout << found[i] << " ";
+			continue;
+		}
 	}
-	std::cout << std::endl;
 	return 0;
 
 }
 void print_help() {
-	std::cout << "Usage: pidof options procname.exe" << std::endl;
+	std::cout << "Usage: pidof [options] [procname.exe]..." << std::endl;
 	std::cout << " -s --single        only output 1 pid per proceses specified" << std::endl;
 	std::cout << " -h --help          print this message" << std::endl;
 	exit(0);
