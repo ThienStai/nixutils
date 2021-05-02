@@ -16,17 +16,20 @@ int main(const int argc, const char* argv[])
 	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
 	auto arg = result.unmatched();
-	if (result.count("h")) {
+	if (result.count("h"))
+	{
 		print_help();
 	}
 
-	if (FALSE == EnableDebugPrivilege()) {
+	if (FALSE == EnableDebugPrivilege())
+	{
 		printf("EnableDebugPrivilege failed: Access denied (are you running elevated?)\n");
 		return 1;
 	}
 
 	auto hToken = OpenSystemProcessToken();
-	if (!hToken) {
+	if (!hToken)
+	{
 		printf("OpenSystemProcessToken failed: Access denied (are you running elevated?)\n");
 		return 1;
 	}
@@ -37,13 +40,15 @@ int main(const int argc, const char* argv[])
 	DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, nullptr, SecurityImpersonation, TokenPrimary, &hPrimary);
 	CloseHandle(hToken);
 
-	if (hDupToken == nullptr) {
+	if (hDupToken == nullptr)
+	{
 		printf("Failed to create token (are you running elevated?) (error=%d)\n", GetLastError());
 		return 1;
 	}
 
 	std::wstring commandLine;
-	for (size_t i = 0; i < arg.size(); i++) {
+	for (size_t i = 0; i < arg.size(); i++)
+	{
 		commandLine += std::wstring(arg[i].begin(), arg[i].end());
 		commandLine += L" ";
 	}
@@ -53,7 +58,8 @@ int main(const int argc, const char* argv[])
 	PROCESS_INFORMATION pi;
 
 	BOOL impersonated = SetThreadToken(nullptr, hDupToken);
-	if (!impersonated) {
+	if (!impersonated)
+	{
 		std::cout << "SetThreadToken failed: Access denied (are you running elevated?)" << std::endl;
 		exit(1);
 	}
@@ -65,48 +71,60 @@ int main(const int argc, const char* argv[])
 	CloseHandle(hCurrentToken);
 
 	if (!SetPrivilege(hDupToken, SE_ASSIGNPRIMARYTOKEN_NAME, TRUE) ||
-		!SetPrivilege(hDupToken, SE_INCREASE_QUOTA_NAME, TRUE)) {
+		!SetPrivilege(hDupToken, SE_INCREASE_QUOTA_NAME, TRUE))
+	{
 		std::cout << "SetPrivilege failed: Insufficient privileges" << std::endl;
 		exit(1);
 	}
 
 	BOOL ok = SetTokenInformation(hPrimary, TokenSessionId, &session, sizeof(session));
 
-	if (!CreateProcessAsUser(hPrimary, nullptr, const_cast<wchar_t*>(commandLine.c_str()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
-		printf("Failed to create process (error=%d)\n", GetLastError());
+	if (!CreateProcessAsUser(hPrimary, nullptr, const_cast<wchar_t*>(commandLine.c_str()), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
+	{
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		//printf("Failed to create process (error=%d)\n", GetLastError());
 		exit(-1);
 	}
-	else {
-		printf("Process created: %d\n", pi.dwProcessId);
+	else
+	{
+		//printf("Process created: %d\n", pi.dwProcessId);
 		exit(0);
 	}
 
 
 }
-void print_help() {
+void print_help()
+{
 	std::cout << "Uasge: sysdo [options] <procname.exe> [arg1] [arg2] ..." << std::endl;
 	std::cout << " -h --help                show this message" << std::endl;
 	exit(0);
 }
 
 
-BOOL IsSystemSid(PSID sid) {
+BOOL IsSystemSid(PSID sid)
+{
 	return IsWellKnownSid(sid, WinLocalSystemSid);
 }
 
-HANDLE OpenSystemProcessToken() {
+HANDLE OpenSystemProcessToken()
+{
 	PWTS_PROCESS_INFO pInfo;
 	DWORD count;
-	if (!WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &pInfo, &count)) {
+	if (!WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &pInfo, &count))
+	{
 		printf("Error enumerating processes (are you running elevated?) (error=%d)\n", GetLastError());
 		return nullptr;
 	}
 
 	HANDLE hToken{};
-	for (DWORD i = 0; i < count && !hToken; i++) {
-		if (pInfo[i].SessionId == 0 && IsSystemSid(pInfo[i].pUserSid)) {
+	for (DWORD i = 0; i < count && !hToken; i++)
+	{
+		if (pInfo[i].SessionId == 0 && IsSystemSid(pInfo[i].pUserSid))
+		{
 			auto hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pInfo[i].ProcessId);
-			if (hProcess) {
+			if (hProcess)
+			{
 				OpenProcessToken(hProcess, TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_QUERY | TOKEN_IMPERSONATE, &hToken);
 				CloseHandle(hProcess);
 			}
@@ -117,7 +135,8 @@ HANDLE OpenSystemProcessToken() {
 	return hToken;
 }
 
-BOOL SetPrivilege(HANDLE hToken, PCTSTR lpszPrivilege, bool bEnablePrivilege) {
+BOOL SetPrivilege(HANDLE hToken, PCTSTR lpszPrivilege, bool bEnablePrivilege)
+{
 	TOKEN_PRIVILEGES tp;
 	LUID luid;
 
@@ -133,7 +152,8 @@ BOOL SetPrivilege(HANDLE hToken, PCTSTR lpszPrivilege, bool bEnablePrivilege) {
 
 	// Enable the privilege or disable all privileges.
 
-	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), nullptr, nullptr)) {
+	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), nullptr, nullptr))
+	{
 		return FALSE;
 	}
 
@@ -143,10 +163,12 @@ BOOL SetPrivilege(HANDLE hToken, PCTSTR lpszPrivilege, bool bEnablePrivilege) {
 	return TRUE;
 }
 
-BOOL EnableDebugPrivilege(void) {
+BOOL EnableDebugPrivilege(void)
+{
 	HANDLE hToken;
 	BOOL result;
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	{
 		return FALSE;
 	}
 	result = SetPrivilege(hToken, SE_DEBUG_NAME, TRUE);
