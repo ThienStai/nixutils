@@ -1,6 +1,8 @@
-﻿#include <TlHelp32.h>
+﻿#pragma once
+#include <TlHelp32.h>
 #include <windows.h>
 #include <vector>
+#include <algorithm>
 std::vector<DWORD> GetProcId(const wchar_t* procName)
 {
 	std::vector<DWORD> res;
@@ -60,4 +62,36 @@ int string_ends_with(const char* str, const char* suffix)
 	return
 		(str_len >= suffix_len) &&
 		(0 == strcmp(str + (str_len - suffix_len), suffix));
+
+}
+bool iequals(const std::string& a, const std::string& b)
+{
+	unsigned int sz = a.size();
+	if (b.size() != sz)
+		return false;
+	for (unsigned int i = 0; i < sz; ++i)
+		if (tolower(a[i]) != tolower(b[i]))
+			return false;
+	return true;
+}
+bool findStringIC(const std::string& strHaystack, const std::string& strNeedle)
+{
+	auto it = std::search(
+		strHaystack.begin(), strHaystack.end(),
+		strNeedle.begin(), strNeedle.end(),
+		[](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+	);
+	return (it != strHaystack.end());
+}
+std::string trim(const std::string& str,
+	const std::string& whitespace = " \t")
+{
+	const auto strBegin = str.find_first_not_of(whitespace);
+	if (strBegin == std::string::npos)
+		return ""; // no content
+
+	const auto strEnd = str.find_last_not_of(whitespace);
+	const auto strRange = strEnd - strBegin + 1;
+
+	return str.substr(strBegin, strRange);
 }
