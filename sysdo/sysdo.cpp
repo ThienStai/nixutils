@@ -83,12 +83,10 @@ int main(const int argc, const char* argv[])
 	{
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
-		//printf("Failed to create process (error=%d)\n", GetLastError());
 		exit(-1);
 	}
 	else
 	{
-		//printf("Process created: %d\n", pi.dwProcessId);
 		exit(0);
 	}
 
